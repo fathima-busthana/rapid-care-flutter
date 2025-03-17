@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "57618775650",
+    "firebase_url": "https://flutter-notify-main-project-default-rtdb.firebaseio.com",
+    "project_id": "flutter-notify-main-project",
+    "storage_bucket": "flutter-notify-main-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:57618775650:android:f698177d9b414779695b3b",
+        "android_client_info": {
+          "package_name": "com.example.project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0yk3-hJapGOc-Ax4YzULGiqjIlc85YRw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
