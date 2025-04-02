@@ -968,7 +968,7 @@ class _BookAmbulancePageState extends State<BookAmbulancePage> {
 
     if (currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("❌ Please log in to book an ambulance.")),
+        SnackBar(content: Text(" Please log in to book an ambulance.")),
       );
       return;
     }
@@ -980,14 +980,14 @@ class _BookAmbulancePageState extends State<BookAmbulancePage> {
         _patientNameController.text.isEmpty ||
         _phoneNumberController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("⚠️ Please fill in all fields!")),
+        SnackBar(content: Text("Please fill in all fields!")),
       );
       return;
     }
 
     if (_phoneNumberController.text.length != 10) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("⚠️ Enter a valid 10-digit phone number!")),
+        SnackBar(content: Text(" Enter a valid 10-digit phone number!")),
       );
       return;
     }
@@ -1011,12 +1011,12 @@ class _BookAmbulancePageState extends State<BookAmbulancePage> {
       "createdAt": FieldValue.serverTimestamp(),
     }).then((value) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("✅ Ambulance booked successfully!")),
+        SnackBar(content: Text(" Ambulance booked successfully!")),
       );
       Navigator.pop(context);
     }).catchError((error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("⚠️ Error booking ambulance: $error")),
+        SnackBar(content: Text("Error booking ambulance: $error")),
       );
     });
   }
@@ -1024,7 +1024,7 @@ class _BookAmbulancePageState extends State<BookAmbulancePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("🚑 Book Ambulance")),
+      appBar: AppBar(title: Text(" Book Ambulance")),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -1084,7 +1084,7 @@ class _BookAmbulancePageState extends State<BookAmbulancePage> {
               SizedBox(height: 20),
 
               // Confirm Booking Button
-              Center(child: ElevatedButton(onPressed: _bookAmbulance, child: Text("🚑 Confirm Booking"))),
+              Center(child: ElevatedButton(onPressed: _bookAmbulance, child: Text(" Confirm Booking"))),
             ],
           ),
         ),

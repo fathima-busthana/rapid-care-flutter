@@ -3238,19 +3238,360 @@
 //   }
 // }
 
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/material.dart';
+// import 'package:project/booking_status.dart';
+// import 'package:project/login_page.dart';
+// import 'package:project/donate_blood.dart';
+// import 'package:project/request_blood.dart';
+// import 'package:sensors_plus/sensors_plus.dart';
+// import 'package:geolocator/geolocator.dart';
+// import 'package:permission_handler/permission_handler.dart';
+// import 'package:twilio_flutter/twilio_flutter.dart';
+// import 'package:url_launcher/url_launcher.dart';
+// import 'book_ambulance.dart';
+// const emergencyno = "+91 8086248944";
+
+// void main() => runApp(MyApp());
+
+// class MyApp extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       debugShowCheckedModeBanner: false,
+//       home: MyHomePage(),
+//     );
+//   }
+// }
+
+// class MyHomePage extends StatefulWidget {
+//   @override
+//   _MyHomePageState createState() => _MyHomePageState();
+// }
+
+// class _MyHomePageState extends State<MyHomePage> {
+//   bool alertShown = false;
+//   Position? currentPosition;
+//   late TwilioFlutter twilioFlutter;
+//   User? currentUser;
+
+//   // Sensor data variables
+//   double? accelerometerX = 0.0;
+//   double? accelerometerY = 0.0;
+//   double? accelerometerZ = 0.0;
+//   double? gyroscopeX = 0.0;
+//   double? gyroscopeY = 0.0;
+//   double? gyroscopeZ = 0.0;
+
+//   @override
+//   void initState() {
+//     super.initState();
+
+//     twilioFlutter = TwilioFlutter(
+//       accountSid: 'AC5fe0b1b3e38146e9a3b2e92e96773850',
+//       authToken: 'cf85d34c06f19d6d862df21c11c576df',
+//       twilioNumber: '+19897839571',
+//     );
+
+//     accelerometerEvents.listen((AccelerometerEvent event) {
+//       setState(() {
+//         accelerometerX = event.x;
+//         accelerometerY = event.y;
+//         accelerometerZ = event.z;
+//       });
+//       if (_detectAccident(event.x, event.y, event.z)) {
+//         if (!alertShown) {
+//           _showAlert();
+//           alertShown = true;
+//         }
+//       }
+//     });
+
+//     gyroscopeEvents.listen((GyroscopeEvent event) {
+//       setState(() {
+//         gyroscopeX = event.x;
+//         gyroscopeY = event.y;
+//         gyroscopeZ = event.z;
+//       });
+//     });
+
+//     _getCurrentLocation();
+
+//     FirebaseAuth.instance.authStateChanges().listen((User? user) {
+//       if (mounted) {
+//         setState(() {
+//           currentUser = user;
+//         });
+//       }
+//     });
+//   }
+
+//   bool _detectAccident(double x, double y, double z) {
+//     double threshold = 20.0;
+//     return (x.abs() > threshold || y.abs() > threshold || z.abs() > threshold);
+//   }
+
+//   Future<void> _getCurrentLocation() async {
+//     var status = await Permission.location.request();
+//     if (status.isGranted) {
+//       currentPosition = await Geolocator.getCurrentPosition(
+//           desiredAccuracy: LocationAccuracy.high);
+//       print("✅ Location: ${currentPosition!.latitude}, ${currentPosition!.longitude}");
+//     } else {
+//       print("❌ Location permission denied");
+//     }
+//   }
+
+//   // void _sendEmergencyMessage() {
+//   //   if (currentPosition != null) {
+//   //     String googleMapsLink =
+//   //         "https://maps.google.com/?q=${currentPosition!.latitude},${currentPosition!.longitude}";
+
+//   //     String message =
+//   //         "🚨 EMERGENCY ALERT 🚨\n\n"
+//   //         "An accident has been detected!\n"
+//   //         "📍 Location: ${currentPosition!.latitude}, ${currentPosition!.longitude}\n"
+//   //         "🔗 View on Maps: $googleMapsLink\n\n"
+//   //         "Please send help immediately!";
+
+//   //     twilioFlutter.sendSMS(
+//   //       toNumber: emergencyno,
+//   //       messageBody: message,
+//   //     );
+
+//   //     print("📩 Emergency message sent: $message");
+//   //   } else {
+//   //     print("❌ Location not available, cannot send message.");
+//   //   }
+//   // }
+//   void _sendEmergencyMessage() async {
+//     String locationUrl =
+//         "https://www.google.com/maps/search/?api=1&query=${currentPosition?.latitude},${currentPosition?.longitude}";
+
+//     try {
+//       await twilioFlutter.sendSMS(
+//         toNumber: emergencyno,
+//         messageBody:
+//             "🚨 Emergency Alert! Possible Accident Detected!\n\n"
+//             "Live Location: $locationUrl\n"
+//             "Please send help immediately!",
+//       );
+//       print("✅ SMS Sent Successfully with Location");
+//     } catch (e) {
+//       print("❌ Failed to send SMS: $e");
+//     }
+//   }
+//   void _makeEmergencyCall() async {
+//   final Uri callUri = Uri(scheme: 'tel', path: '108'); // Emergency number 108
+//   if (await canLaunch(callUri.toString())) {
+//     await launch(callUri.toString());
+//     print("📞 Calling emergency number 108...");
+//   } else {
+//     print("❌ Could not launch call.");
+//   }
+// }
+
+//   // void _makeEmergencyCall() {
+//   //   twilioFlutter.sendSMS(
+//   //     toNumber: "+91XXXXXXXXXX",
+//   //     messageBody: "🚨 Accident detected! Please check immediately.",
+//   //   );
+//   //   print("📞 Calling emergency number...");
+//   // }
+
+//   void _showAlert() {
+//     showDialog(
+//       context: context,
+//       barrierDismissible: false,
+//       builder: (BuildContext context) {
+//         return AlertDialog(
+//           title: Text("🚨 Accident Detected"),
+//           content: Text("Are you safe?"),
+//           actions: [
+//             TextButton(
+//               child: Text("Yes, I'm Safe"),
+//               onPressed: () {
+//                 Navigator.of(context).pop();
+//                 alertShown = false;
+//               },
+//             ),
+//             TextButton(
+//               child: Text("No, Need Help"),
+//               onPressed: () {
+//                 Navigator.of(context).pop();
+//                 _sendEmergencyMessage();
+//                 _makeEmergencyCall();
+//               },
+//             ),
+//           ],
+//         );
+//       },
+//     );
+
+//     Future.delayed(Duration(seconds: 20), () {
+//       if (alertShown) {
+//         print("⏳ No response within 20 seconds. Sending emergency alert.");
+//         _sendEmergencyMessage();
+//         _makeEmergencyCall();
+//       }
+//     });
+//   }
+
+//   void _signOut(BuildContext context) async {
+//     await FirebaseAuth.instance.signOut();
+//     Navigator.pushReplacement(
+//       context,
+//       MaterialPageRoute(builder: (context) => LoginPage()),
+//     );
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: Text(" Accident Detection System")),
+//       drawer: AppDrawer(currentUser: currentUser, signOut: _signOut),
+//       body: Center(
+//         child: Column(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: [
+//             Text(
+//               "📡 Monitoring Sensor Data...",
+//               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+//             ),
+//             SizedBox(height: 20),
+//             Card(
+//               margin: EdgeInsets.all(15),
+//               elevation: 5,
+//               child: Padding(
+//                 padding: const EdgeInsets.all(15),
+//                 child: Column(
+//                   children: [
+//                     Text(
+//                       "Accelerometer Data:",
+//                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+//                     ),
+//                     SizedBox(height: 10),
+//                     Text("X: ${accelerometerX?.toStringAsFixed(2)}"),
+//                     Text("Y: ${accelerometerY?.toStringAsFixed(2)}"),
+//                     Text("Z: ${accelerometerZ?.toStringAsFixed(2)}"),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//             Card(
+//               margin: EdgeInsets.all(15),
+//               elevation: 5,
+//               child: Padding(
+//                 padding: const EdgeInsets.all(15),
+//                 child: Column(
+//                   children: [
+//                     Text(
+//                       "Gyroscope Data:",
+//                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+//                     ),
+//                     SizedBox(height: 10),
+//                     Text("X: ${gyroscopeX?.toStringAsFixed(2)}"),
+//                     Text("Y: ${gyroscopeY?.toStringAsFixed(2)}"),
+//                     Text("Z: ${gyroscopeZ?.toStringAsFixed(2)}"),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+// /// **Persistent Drawer Widget**
+// class AppDrawer extends StatelessWidget {
+//   final User? currentUser;
+//   final Function(BuildContext) signOut;
+
+//   const AppDrawer({Key? key, required this.currentUser, required this.signOut}) : super(key: key);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Drawer(
+//       child: ListView(
+//         padding: EdgeInsets.zero,
+//         children: [
+//           DrawerHeader(
+//             decoration: BoxDecoration(color: Colors.blue),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Icon(Icons.account_circle, size: 80, color: Colors.white),
+//                 SizedBox(height: 10),
+//                 Text(
+//                   currentUser != null ? currentUser!.email ?? "User" : "Guest",
+//                   style: TextStyle(color: Colors.white, fontSize: 18),
+//                 ),
+//               ],
+//             ),
+//           ),
+
+//           ListTile(
+//             leading: Icon(Icons.local_hospital),
+//             title: Text(" Book Ambulance"),
+//             onTap: () {
+//               Navigator.push(context, MaterialPageRoute(builder: (context) => BookAmbulancePage()));
+//             },
+//           ),
+
+//           if (currentUser != null)
+//             ListTile(
+//               leading: Icon(Icons.assignment),
+//               title: Text(" View Booking Status"),
+//               onTap: () {
+//                 Navigator.push(context, MaterialPageRoute(builder: (context) => BookingStatusPage()));
+//               },
+//             ),
+
+//           ListTile(
+//             leading: Icon(Icons.bloodtype),
+//             title: Text(" Donate Blood"),
+//             onTap: () {
+//               Navigator.push(context, MaterialPageRoute(builder: (context) => DonateBloodPage()));
+//             },
+//           ),
+
+//           ListTile(
+//             leading: Icon(Icons.bloodtype_outlined),
+//             title: Text(" Request Blood"),
+//             onTap: () {
+//               Navigator.push(context, MaterialPageRoute(builder: (context) => RequestBloodPage()));
+//             },
+//           ),
+
+//           ListTile(
+//             leading: Icon(Icons.logout),
+//             title: Text("Sign Out"),
+//             onTap: () {
+//               signOut(context);
+//             },
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:project/blood_donor_list.dart';
 import 'package:project/booking_status.dart';
 import 'package:project/login_page.dart';
 import 'package:project/donate_blood.dart';
 import 'package:project/request_blood.dart';
+import 'package:project/view_blood_requests.dart'; // ✅ Import new page
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:twilio_flutter/twilio_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'book_ambulance.dart';
+
 const emergencyno = "+91 8086248944";
 
 void main() => runApp(MyApp());
@@ -3280,9 +3621,6 @@ class _MyHomePageState extends State<MyHomePage> {
   double? accelerometerX = 0.0;
   double? accelerometerY = 0.0;
   double? accelerometerZ = 0.0;
-  double? gyroscopeX = 0.0;
-  double? gyroscopeY = 0.0;
-  double? gyroscopeZ = 0.0;
 
   @override
   void initState() {
@@ -3308,14 +3646,6 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     });
 
-    gyroscopeEvents.listen((GyroscopeEvent event) {
-      setState(() {
-        gyroscopeX = event.x;
-        gyroscopeY = event.y;
-        gyroscopeZ = event.z;
-      });
-    });
-
     _getCurrentLocation();
 
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
@@ -3337,34 +3667,11 @@ class _MyHomePageState extends State<MyHomePage> {
     if (status.isGranted) {
       currentPosition = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
-      print("✅ Location: ${currentPosition!.latitude}, ${currentPosition!.longitude}");
     } else {
       print("❌ Location permission denied");
     }
   }
 
-  // void _sendEmergencyMessage() {
-  //   if (currentPosition != null) {
-  //     String googleMapsLink =
-  //         "https://maps.google.com/?q=${currentPosition!.latitude},${currentPosition!.longitude}";
-
-  //     String message =
-  //         "🚨 EMERGENCY ALERT 🚨\n\n"
-  //         "An accident has been detected!\n"
-  //         "📍 Location: ${currentPosition!.latitude}, ${currentPosition!.longitude}\n"
-  //         "🔗 View on Maps: $googleMapsLink\n\n"
-  //         "Please send help immediately!";
-
-  //     twilioFlutter.sendSMS(
-  //       toNumber: emergencyno,
-  //       messageBody: message,
-  //     );
-
-  //     print("📩 Emergency message sent: $message");
-  //   } else {
-  //     print("❌ Location not available, cannot send message.");
-  //   }
-  // }
   void _sendEmergencyMessage() async {
     String locationUrl =
         "https://www.google.com/maps/search/?api=1&query=${currentPosition?.latitude},${currentPosition?.longitude}";
@@ -3373,32 +3680,24 @@ class _MyHomePageState extends State<MyHomePage> {
       await twilioFlutter.sendSMS(
         toNumber: emergencyno,
         messageBody:
-            "🚨 Emergency Alert! Possible Accident Detected!\n\n"
+            " Emergency Alert! Possible Accident Detected!\n\n"
             "Live Location: $locationUrl\n"
             "Please send help immediately!",
       );
-      print("✅ SMS Sent Successfully with Location");
+      print(" SMS Sent Successfully with Location");
     } catch (e) {
-      print("❌ Failed to send SMS: $e");
+      print(" Failed to send SMS: $e");
     }
   }
-  void _makeEmergencyCall() async {
-  final Uri callUri = Uri(scheme: 'tel', path: '108'); // Emergency number 108
-  if (await canLaunch(callUri.toString())) {
-    await launch(callUri.toString());
-    print("📞 Calling emergency number 108...");
-  } else {
-    print("❌ Could not launch call.");
-  }
-}
 
-  // void _makeEmergencyCall() {
-  //   twilioFlutter.sendSMS(
-  //     toNumber: "+91XXXXXXXXXX",
-  //     messageBody: "🚨 Accident detected! Please check immediately.",
-  //   );
-  //   print("📞 Calling emergency number...");
-  // }
+  void _makeEmergencyCall() async {
+    final Uri callUri = Uri(scheme: 'tel', path: '108'); // Emergency number 108
+    if (await canLaunch(callUri.toString())) {
+      await launch(callUri.toString());
+    } else {
+      print(" Could not launch call.");
+    }
+  }
 
   void _showAlert() {
     showDialog(
@@ -3406,7 +3705,7 @@ class _MyHomePageState extends State<MyHomePage> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("🚨 Accident Detected"),
+          title: Text(" Accident Detected"),
           content: Text("Are you safe?"),
           actions: [
             TextButton(
@@ -3431,7 +3730,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     Future.delayed(Duration(seconds: 20), () {
       if (alertShown) {
-        print("⏳ No response within 20 seconds. Sending emergency alert.");
         _sendEmergencyMessage();
         _makeEmergencyCall();
       }
@@ -3449,54 +3747,15 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(" Accident Detection System")),
+      appBar: AppBar(title: Text(" RapidCare")),
       drawer: AppDrawer(currentUser: currentUser, signOut: _signOut),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              "📡 Monitoring Sensor Data...",
+              " Monitoring Sensor Data...",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Card(
-              margin: EdgeInsets.all(15),
-              elevation: 5,
-              child: Padding(
-                padding: const EdgeInsets.all(15),
-                child: Column(
-                  children: [
-                    Text(
-                      "Accelerometer Data:",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 10),
-                    Text("X: ${accelerometerX?.toStringAsFixed(2)}"),
-                    Text("Y: ${accelerometerY?.toStringAsFixed(2)}"),
-                    Text("Z: ${accelerometerZ?.toStringAsFixed(2)}"),
-                  ],
-                ),
-              ),
-            ),
-            Card(
-              margin: EdgeInsets.all(15),
-              elevation: 5,
-              child: Padding(
-                padding: const EdgeInsets.all(15),
-                child: Column(
-                  children: [
-                    Text(
-                      "Gyroscope Data:",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 10),
-                    Text("X: ${gyroscopeX?.toStringAsFixed(2)}"),
-                    Text("Y: ${gyroscopeY?.toStringAsFixed(2)}"),
-                    Text("Z: ${gyroscopeZ?.toStringAsFixed(2)}"),
-                  ],
-                ),
-              ),
             ),
           ],
         ),
@@ -3505,7 +3764,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-/// **Persistent Drawer Widget**
+/// **📌 Drawer Widget**
 class AppDrawer extends StatelessWidget {
   final User? currentUser;
   final Function(BuildContext) signOut;
@@ -3535,7 +3794,7 @@ class AppDrawer extends StatelessWidget {
 
           ListTile(
             leading: Icon(Icons.local_hospital),
-            title: Text(" Book Ambulance"),
+            title: Text("Book Ambulance"),
             onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => BookAmbulancePage()));
             },
@@ -3544,15 +3803,15 @@ class AppDrawer extends StatelessWidget {
           if (currentUser != null)
             ListTile(
               leading: Icon(Icons.assignment),
-              title: Text(" View Booking Status"),
+              title: Text("View Booking Status"),
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => BookingStatusPage()));
               },
             ),
 
           ListTile(
-            leading: Icon(Icons.bloodtype),
-            title: Text(" Donate Blood"),
+            leading: Icon(Icons.water_drop),
+            title: Text("Donate Blood"),
             onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => DonateBloodPage()));
             },
@@ -3560,9 +3819,17 @@ class AppDrawer extends StatelessWidget {
 
           ListTile(
             leading: Icon(Icons.bloodtype_outlined),
-            title: Text(" Request Blood"),
+            title: Text("Request Blood"),
             onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => RequestBloodPage()));
+            },
+          ),
+
+          ListTile(
+            leading: Icon(Icons.list),
+            title: Text("View Blood Requests"),  // ✅ Added
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ViewBloodRequestsPage()));
             },
           ),
 
@@ -3578,3 +3845,4 @@ class AppDrawer extends StatelessWidget {
     );
   }
 }
+

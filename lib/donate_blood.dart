@@ -820,253 +820,253 @@
 //   }
 // }
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/material.dart';
 
-class DonateBloodPage extends StatefulWidget {
-  @override
-  _DonateBloodPageState createState() => _DonateBloodPageState();
-}
+// class DonateBloodPage extends StatefulWidget {
+//   @override
+//   _DonateBloodPageState createState() => _DonateBloodPageState();
+// }
 
-class _DonateBloodPageState extends State<DonateBloodPage> {
-  String? currentUserId;
-  String? donorName, donorLocation, donorPhone, selectedBloodGroup;
-  bool isLoading = false;
-  List<Map<String, dynamic>> bloodRequests = [];
+// class _DonateBloodPageState extends State<DonateBloodPage> {
+//   String? currentUserId;
+//   String? donorName, donorLocation, donorPhone, selectedBloodGroup;
+//   bool isLoading = false;
+//   List<Map<String, dynamic>> bloodRequests = [];
 
-  final _formKey = GlobalKey<FormState>();
-  final List<String> bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
+//   final _formKey = GlobalKey<FormState>();
+//   final List<String> bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
-  @override
-  void initState() {
-    super.initState();
-    _getCurrentUser();
-  }
+//   @override
+//   void initState() {
+//     super.initState();
+//     _getCurrentUser();
+//   }
 
-  void _getCurrentUser() {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      setState(() {
-        currentUserId = user.uid;
-      });
-    }
-  }
+//   void _getCurrentUser() {
+//     User? user = FirebaseAuth.instance.currentUser;
+//     if (user != null) {
+//       setState(() {
+//         currentUserId = user.uid;
+//       });
+//     }
+//   }
 
-  Future<void> _submitDonorApplication() async {
-    if (!_formKey.currentState!.validate()) return;
-    _formKey.currentState!.save();
+//   Future<void> _submitDonorApplication() async {
+//     if (!_formKey.currentState!.validate()) return;
+//     _formKey.currentState!.save();
 
-    try {
-      QuerySnapshot existingDonor = await FirebaseFirestore.instance
-          .collection('blood')
-          .where('userId', isEqualTo: currentUserId)
-          .get();
+//     try {
+//       QuerySnapshot existingDonor = await FirebaseFirestore.instance
+//           .collection('blood')
+//           .where('userId', isEqualTo: currentUserId)
+//           .get();
 
-      if (existingDonor.docs.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("You are already registered as a blood donor.")),
-        );
-        return;
-      }
+//       if (existingDonor.docs.isNotEmpty) {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(content: Text("You are already registered as a blood donor.")),
+//         );
+//         return;
+//       }
 
-      await FirebaseFirestore.instance.collection('blood').add({
-        'userId': currentUserId,
-        'name': donorName,
-        'bloodGroup': selectedBloodGroup,
-        'location': donorLocation,
-        'phone': donorPhone,
-        'rewards': 0,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+//       await FirebaseFirestore.instance.collection('blood').add({
+//         'userId': currentUserId,
+//         'name': donorName,
+//         'bloodGroup': selectedBloodGroup,
+//         'location': donorLocation,
+//         'phone': donorPhone,
+//         'rewards': 0,
+//         'timestamp': FieldValue.serverTimestamp(),
+//       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Donor registration successful!")),
-      );
-    } catch (e) {
-      print("❌ Error submitting donor application: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to register as a donor.")),
-      );
-    }
-  }
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(content: Text("Donor registration successful!")),
+//       );
+//     } catch (e) {
+//       print("❌ Error submitting donor application: $e");
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(content: Text("Failed to register as a donor.")),
+//       );
+//     }
+//   }
 
-  Future<void> _fetchBloodRequestsWithDonors() async {
-    setState(() {
-      isLoading = true;
-    });
+//   Future<void> _fetchBloodRequestsWithDonors() async {
+//     setState(() {
+//       isLoading = true;
+//     });
 
-    try {
-      QuerySnapshot requestSnapshot = await FirebaseFirestore.instance
-          .collection('request_blood')
-          .where('status', isEqualTo: 'pending')
-          .get();
+//     try {
+//       QuerySnapshot requestSnapshot = await FirebaseFirestore.instance
+//           .collection('request_blood')
+//           .where('status', isEqualTo: 'pending')
+//           .get();
 
-      List<Map<String, dynamic>> requestsWithDonors = [];
+//       List<Map<String, dynamic>> requestsWithDonors = [];
 
-      for (var requestDoc in requestSnapshot.docs) {
-        var requestData = requestDoc.data() as Map<String, dynamic>;
-        String requestedBloodGroup = requestData['bloodGroup'];
+//       for (var requestDoc in requestSnapshot.docs) {
+//         var requestData = requestDoc.data() as Map<String, dynamic>;
+//         String requestedBloodGroup = requestData['bloodGroup'];
 
-        // Fetch matching donors from 'blood' collection
-        QuerySnapshot donorSnapshot = await FirebaseFirestore.instance
-            .collection('blood')
-            .where('bloodGroup', isEqualTo: requestedBloodGroup)
-            .get();
+//         // Fetch matching donors from 'blood' collection
+//         QuerySnapshot donorSnapshot = await FirebaseFirestore.instance
+//             .collection('blood')
+//             .where('bloodGroup', isEqualTo: requestedBloodGroup)
+//             .get();
 
-        List<Map<String, dynamic>> matchingDonors = donorSnapshot.docs.map((doc) {
-          var donorData = doc.data() as Map<String, dynamic>;
-          donorData['id'] = doc.id;
-          return donorData;
-        }).toList();
+//         List<Map<String, dynamic>> matchingDonors = donorSnapshot.docs.map((doc) {
+//           var donorData = doc.data() as Map<String, dynamic>;
+//           donorData['id'] = doc.id;
+//           return donorData;
+//         }).toList();
 
-        requestData['donors'] = matchingDonors;
-        requestData['id'] = requestDoc.id;
-        requestsWithDonors.add(requestData);
-      }
+//         requestData['donors'] = matchingDonors;
+//         requestData['id'] = requestDoc.id;
+//         requestsWithDonors.add(requestData);
+//       }
 
-      setState(() {
-        bloodRequests = requestsWithDonors;
-      });
-    } catch (e) {
-      print("❌ Error fetching blood requests with donors: $e");
-    }
+//       setState(() {
+//         bloodRequests = requestsWithDonors;
+//       });
+//     } catch (e) {
+//       print("❌ Error fetching blood requests with donors: $e");
+//     }
 
-    setState(() {
-      isLoading = false;
-    });
-  }
+//     setState(() {
+//       isLoading = false;
+//     });
+//   }
 
-  void _showBloodRequests() {
-    _fetchBloodRequestsWithDonors();
+//   void _showBloodRequests() {
+//     _fetchBloodRequestsWithDonors();
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text("Blood Requests & Donors", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              SizedBox(height: 10),
-              isLoading
-                  ? Center(child: CircularProgressIndicator())
-                  : bloodRequests.isEmpty
-                      ? Center(child: Text("No pending blood requests"))
-                      : Expanded(
-                          child: ListView.builder(
-                            itemCount: bloodRequests.length,
-                            itemBuilder: (context, index) {
-                              var request = bloodRequests[index];
-                              var donors = request['donors'] as List<Map<String, dynamic>>;
+//     showModalBottomSheet(
+//       context: context,
+//       isScrollControlled: true,
+//       builder: (context) {
+//         return Padding(
+//           padding: EdgeInsets.all(16),
+//           child: Column(
+//             mainAxisSize: MainAxisSize.min,
+//             children: [
+//               Text("Blood Requests & Donors", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+//               SizedBox(height: 10),
+//               isLoading
+//                   ? Center(child: CircularProgressIndicator())
+//                   : bloodRequests.isEmpty
+//                       ? Center(child: Text("No pending blood requests"))
+//                       : Expanded(
+//                           child: ListView.builder(
+//                             itemCount: bloodRequests.length,
+//                             itemBuilder: (context, index) {
+//                               var request = bloodRequests[index];
+//                               var donors = request['donors'] as List<Map<String, dynamic>>;
 
-                              return Card(
-                                elevation: 3,
-                                margin: EdgeInsets.symmetric(vertical: 8),
-                                child: ExpansionTile(
-                                  title: Text("Request by: ${request['requesterName']}"),
-                                  subtitle: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text("Blood Group: ${request['bloodGroup']}"),
-                                      Text("📍 Location: ${request['requesterLocation'] ?? 'Not provided'}"),
-                                      Text("📞 Phone: ${request['requesterPhone'] ?? 'Not provided'}"),
-                                    ],
-                                  ),
-                                  children: donors.isEmpty
-                                      ? [Padding(padding: EdgeInsets.all(8), child: Text("No donors available"))]
-                                      : donors.map((donor) {
-                                          return ListTile(
-                                            title: Text(donor['name']),
-                                            subtitle: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text("📍 Location: ${donor['location']}"),
-                                                Text("📞 Phone: ${donor['phone']}"),
-                                                Text("🎖️ Rewards: ${donor['rewards']}"),
-                                              ],
-                                            ),
-                                          );
-                                        }).toList(),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+//                               return Card(
+//                                 elevation: 3,
+//                                 margin: EdgeInsets.symmetric(vertical: 8),
+//                                 child: ExpansionTile(
+//                                   title: Text("Request by: ${request['requesterName']}"),
+//                                   subtitle: Column(
+//                                     crossAxisAlignment: CrossAxisAlignment.start,
+//                                     children: [
+//                                       Text("Blood Group: ${request['bloodGroup']}"),
+//                                       Text("📍 Location: ${request['requesterLocation'] ?? 'Not provided'}"),
+//                                       Text("📞 Phone: ${request['requesterPhone'] ?? 'Not provided'}"),
+//                                     ],
+//                                   ),
+//                                   children: donors.isEmpty
+//                                       ? [Padding(padding: EdgeInsets.all(8), child: Text("No donors available"))]
+//                                       : donors.map((donor) {
+//                                           return ListTile(
+//                                             title: Text(donor['name']),
+//                                             subtitle: Column(
+//                                               crossAxisAlignment: CrossAxisAlignment.start,
+//                                               children: [
+//                                                 Text("📍 Location: ${donor['location']}"),
+//                                                 Text("📞 Phone: ${donor['phone']}"),
+//                                                 Text("🎖️ Rewards: ${donor['rewards']}"),
+//                                               ],
+//                                             ),
+//                                           );
+//                                         }).toList(),
+//                                 ),
+//                               );
+//                             },
+//                           ),
+//                         ),
+//             ],
+//           ),
+//         );
+//       },
+//     );
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(" Donate Blood")),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(" Become a Blood Donor", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: Text(" Donate Blood")),
+//       body: Padding(
+//         padding: EdgeInsets.all(16.0),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text(" Become a Blood Donor", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+//             SizedBox(height: 10),
 
-            Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    decoration: InputDecoration(labelText: "Name"),
-                    validator: (value) => value!.isEmpty ? "Enter your name" : null,
-                    onSaved: (value) => donorName = value,
-                  ),
-                  SizedBox(height: 10),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(labelText: "Blood Group"),
-                    items: bloodGroups.map((String group) {
-                      return DropdownMenuItem<String>(
-                        value: group,
-                        child: Text(group),
-                      );
-                    }).toList(),
-                    onChanged: (value) => selectedBloodGroup = value,
-                  ),
-                  SizedBox(height: 10),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: "Location"),
-                    validator: (value) => value!.isEmpty ? "Enter your location" : null,
-                    onSaved: (value) => donorLocation = value,
-                  ),
-                  SizedBox(height: 10),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: "Phone Number"),
-                    validator: (value) => value!.isEmpty ? "Enter your phone number" : null,
-                    onSaved: (value) => donorPhone = value,
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _submitDonorApplication,
-                    child: Text("Register as Donor"),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _showBloodRequests,
-              child: Text("View Blood Requests"),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.white10),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+//             Form(
+//               key: _formKey,
+//               child: Column(
+//                 children: [
+//                   TextFormField(
+//                     decoration: InputDecoration(labelText: "Name"),
+//                     validator: (value) => value!.isEmpty ? "Enter your name" : null,
+//                     onSaved: (value) => donorName = value,
+//                   ),
+//                   SizedBox(height: 10),
+//                   DropdownButtonFormField<String>(
+//                     decoration: InputDecoration(labelText: "Blood Group"),
+//                     items: bloodGroups.map((String group) {
+//                       return DropdownMenuItem<String>(
+//                         value: group,
+//                         child: Text(group),
+//                       );
+//                     }).toList(),
+//                     onChanged: (value) => selectedBloodGroup = value,
+//                   ),
+//                   SizedBox(height: 10),
+//                   TextFormField(
+//                     decoration: InputDecoration(labelText: "Location"),
+//                     validator: (value) => value!.isEmpty ? "Enter your location" : null,
+//                     onSaved: (value) => donorLocation = value,
+//                   ),
+//                   SizedBox(height: 10),
+//                   TextFormField(
+//                     decoration: InputDecoration(labelText: "Phone Number"),
+//                     validator: (value) => value!.isEmpty ? "Enter your phone number" : null,
+//                     onSaved: (value) => donorPhone = value,
+//                   ),
+//                   SizedBox(height: 20),
+//                   ElevatedButton(
+//                     onPressed: _submitDonorApplication,
+//                     child: Text("Register as Donor"),
+//                     style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//             SizedBox(height: 20),
+//             ElevatedButton(
+//               onPressed: _showBloodRequests,
+//               child: Text("View Blood Requests"),
+//               style: ElevatedButton.styleFrom(backgroundColor: Colors.white10),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 // import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
@@ -2127,3 +2127,608 @@ class _DonateBloodPageState extends State<DonateBloodPage> {
 //   }
 // }
 
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/material.dart';
+
+// class DonateBloodPage extends StatefulWidget {
+//   @override
+//   _DonateBloodPageState createState() => _DonateBloodPageState();
+// }
+
+// class _DonateBloodPageState extends State<DonateBloodPage> {
+//   String? currentUserId;
+//   String? donorName, donorLocation, donorPhone, selectedBloodGroup;
+//   bool isLoading = false;
+//   List<Map<String, dynamic>> bloodRequests = [];
+
+//   final _formKey = GlobalKey<FormState>();
+//   final List<String> bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _getCurrentUser();
+//   }
+
+//   /// Get the currently logged-in user's ID
+//   void _getCurrentUser() {
+//     User? user = FirebaseAuth.instance.currentUser;
+//     if (user != null) {
+//       setState(() {
+//         currentUserId = user.uid;
+//       });
+//     }
+//   }
+
+//   /// Submit blood donor details to Firestore
+//   Future<void> _submitDonorApplication() async {
+//     if (!_formKey.currentState!.validate()) return;
+//     _formKey.currentState!.save();
+
+//     try {
+//       // Check if user is already registered as a donor
+//       QuerySnapshot existingDonor = await FirebaseFirestore.instance
+//           .collection('blood')
+//           .where('userId', isEqualTo: currentUserId)
+//           .get();
+
+//       if (existingDonor.docs.isNotEmpty) {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(content: Text("You are already registered as a blood donor.")),
+//         );
+//         return;
+//       }
+
+//       // Register donor with initial 'status' field set to 'none'
+//       await FirebaseFirestore.instance.collection('blood').add({
+//         'userId': currentUserId,
+//         'name': donorName,
+//         'bloodGroup': selectedBloodGroup,
+//         'location': donorLocation,
+//         'phone': donorPhone,
+//         'rewards': 0,
+//         'status': 'none', // 🔹 Added status field with default value 'none'
+//         'timestamp': FieldValue.serverTimestamp(),
+//       });
+
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(content: Text("Donor registration successful!")),
+//       );
+//     } catch (e) {
+//       print("❌ Error submitting donor application: $e");
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(content: Text("Failed to register as a donor.")),
+//       );
+//     }
+//   }
+
+//   /// Fetch blood requests along with matching donors
+//   Future<void> _fetchBloodRequestsWithDonors() async {
+//     setState(() {
+//       isLoading = true;
+//     });
+
+//     try {
+//       QuerySnapshot requestSnapshot = await FirebaseFirestore.instance
+//           .collection('request_blood')
+//           .where('status', isEqualTo: 'pending')
+//           .get();
+
+//       List<Map<String, dynamic>> requestsWithDonors = [];
+
+//       for (var requestDoc in requestSnapshot.docs) {
+//         var requestData = requestDoc.data() as Map<String, dynamic>;
+//         String requestedBloodGroup = requestData['bloodGroup'];
+
+//         // Fetch matching donors from 'blood' collection
+//         QuerySnapshot donorSnapshot = await FirebaseFirestore.instance
+//             .collection('blood')
+//             .where('bloodGroup', isEqualTo: requestedBloodGroup)
+//             .get();
+
+//         List<Map<String, dynamic>> matchingDonors = donorSnapshot.docs.map((doc) {
+//           var donorData = doc.data() as Map<String, dynamic>;
+//           donorData['id'] = doc.id;
+//           return donorData;
+//         }).toList();
+
+//         requestData['donors'] = matchingDonors;
+//         requestData['id'] = requestDoc.id;
+//         requestsWithDonors.add(requestData);
+//       }
+
+//       setState(() {
+//         bloodRequests = requestsWithDonors;
+//       });
+//     } catch (e) {
+//       print("❌ Error fetching blood requests with donors: $e");
+//     }
+
+//     setState(() {
+//       isLoading = false;
+//     });
+//   }
+
+//   /// Show modal bottom sheet with blood requests & available donors
+//   void _showBloodRequests() {
+//     _fetchBloodRequestsWithDonors();
+
+//     showModalBottomSheet(
+//       context: context,
+//       isScrollControlled: true,
+//       builder: (context) {
+//         return Padding(
+//           padding: EdgeInsets.all(16),
+//           child: Column(
+//             mainAxisSize: MainAxisSize.min,
+//             children: [
+//               Text("Blood Requests & Donors", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+//               SizedBox(height: 10),
+//               isLoading
+//                   ? Center(child: CircularProgressIndicator())
+//                   : bloodRequests.isEmpty
+//                       ? Center(child: Text("No pending blood requests"))
+//                       : Expanded(
+//                           child: ListView.builder(
+//                             itemCount: bloodRequests.length,
+//                             itemBuilder: (context, index) {
+//                               var request = bloodRequests[index];
+//                               var donors = request['donors'] as List<Map<String, dynamic>>;
+
+//                               return Card(
+//                                 elevation: 3,
+//                                 margin: EdgeInsets.symmetric(vertical: 8),
+//                                 child: ExpansionTile(
+//                                   title: Text("Request by: ${request['requesterName']}"),
+//                                   subtitle: Column(
+//                                     crossAxisAlignment: CrossAxisAlignment.start,
+//                                     children: [
+//                                       Text("Blood Group: ${request['bloodGroup']}"),
+//                                       Text("📍 Location: ${request['requesterLocation'] ?? 'Not provided'}"),
+//                                       Text("📞 Phone: ${request['requesterPhone'] ?? 'Not provided'}"),
+//                                     ],
+//                                   ),
+//                                   children: donors.isEmpty
+//                                       ? [Padding(padding: EdgeInsets.all(8), child: Text("No donors available"))]
+//                                       : donors.map((donor) {
+//                                           return ListTile(
+//                                             title: Text(donor['name']),
+//                                             subtitle: Column(
+//                                               crossAxisAlignment: CrossAxisAlignment.start,
+//                                               children: [
+//                                                 Text("📍 Location: ${donor['location']}"),
+//                                                 Text("📞 Phone: ${donor['phone']}"),
+//                                                 Text("🎖️ Rewards: ${donor['rewards']}"),
+//                                               ],
+//                                             ),
+//                                           );
+//                                         }).toList(),
+//                                 ),
+//                               );
+//                             },
+//                           ),
+//                         ),
+//             ],
+//           ),
+//         );
+//       },
+//     );
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: Text(" Donate Blood")),
+//       body: Padding(
+//         padding: EdgeInsets.all(16.0),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text(" Become a Blood Donor", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+//             SizedBox(height: 10),
+
+//             Form(
+//               key: _formKey,
+//               child: Column(
+//                 children: [
+//                   TextFormField(
+//                     decoration: InputDecoration(labelText: "Name"),
+//                     validator: (value) => value!.isEmpty ? "Enter your name" : null,
+//                     onSaved: (value) => donorName = value,
+//                   ),
+//                   SizedBox(height: 10),
+//                   DropdownButtonFormField<String>(
+//                     decoration: InputDecoration(labelText: "Blood Group"),
+//                     items: bloodGroups.map((String group) {
+//                       return DropdownMenuItem<String>(
+//                         value: group,
+//                         child: Text(group),
+//                       );
+//                     }).toList(),
+//                     onChanged: (value) => selectedBloodGroup = value,
+//                   ),
+//                   SizedBox(height: 10),
+//                   TextFormField(
+//                     decoration: InputDecoration(labelText: "Location"),
+//                     validator: (value) => value!.isEmpty ? "Enter your location" : null,
+//                     onSaved: (value) => donorLocation = value,
+//                   ),
+//                   SizedBox(height: 10),
+//                   TextFormField(
+//                     decoration: InputDecoration(labelText: "Phone Number"),
+//                     validator: (value) => value!.isEmpty ? "Enter your phone number" : null,
+//                     onSaved: (value) => donorPhone = value,
+//                   ),
+//                   SizedBox(height: 20),
+//                   ElevatedButton(
+//                     onPressed: _submitDonorApplication,
+//                     child: Text("Register as Donor"),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//             SizedBox(height: 20),
+//             ElevatedButton(
+//               onPressed: _showBloodRequests,
+//               child: Text("View Blood Requests"),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/material.dart';
+// import 'package:twilio_flutter/twilio_flutter.dart';
+
+// class DonateBloodPage extends StatefulWidget {
+//   @override
+//   _DonateBloodPageState createState() => _DonateBloodPageState();
+// }
+
+// class _DonateBloodPageState extends State<DonateBloodPage> {
+//   String? currentUserId;
+//   String? donorName, donorLocation, donorPhone, selectedBloodGroup;
+//   bool isLoading = false;
+//   List<Map<String, dynamic>> bloodRequests = [];
+
+//   final _formKey = GlobalKey<FormState>();
+//   final List<String> bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
+
+//   TwilioFlutter twilioFlutter = TwilioFlutter(
+//     accountSid: 'YOUR_TWILIO_SID',
+//     authToken: 'YOUR_TWILIO_AUTH_TOKEN',
+//     twilioNumber: 'YOUR_TWILIO_PHONE_NUMBER',
+//   );
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _getCurrentUser();
+//   }
+
+//   void _getCurrentUser() {
+//     User? user = FirebaseAuth.instance.currentUser;
+//     if (user != null) {
+//       setState(() {
+//         currentUserId = user.uid;
+//       });
+//     }
+//   }
+
+//   Future<void> _submitDonorApplication() async {
+//     if (!_formKey.currentState!.validate()) return;
+//     _formKey.currentState!.save();
+
+//     try {
+//       QuerySnapshot existingDonor = await FirebaseFirestore.instance
+//           .collection('blood')
+//           .where('userId', isEqualTo: currentUserId)
+//           .get();
+
+//       if (existingDonor.docs.isNotEmpty) {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(content: Text("You are already registered as a blood donor.")),
+//         );
+//         return;
+//       }
+
+//       await FirebaseFirestore.instance.collection('blood').add({
+//         'userId': currentUserId,
+//         'name': donorName,
+//         'bloodGroup': selectedBloodGroup,
+//         'location': donorLocation,
+//         'phone': donorPhone,
+//         'rewards': 0,
+//         'status': 'none',
+//         'timestamp': FieldValue.serverTimestamp(),
+//       });
+
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(content: Text("Donor registration successful!")),
+//       );
+//     } catch (e) {
+//       print("❌ Error submitting donor application: $e");
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(content: Text("Failed to register as a donor.")),
+//       );
+//     }
+//   }
+
+//   Future<void> _fetchBloodRequestsWithDonors() async {
+//     setState(() {
+//       isLoading = true;
+//     });
+
+//     try {
+//       QuerySnapshot requestSnapshot = await FirebaseFirestore.instance
+//           .collection('request_blood')
+//           .where('status', isEqualTo: 'pending')
+//           .get();
+
+//       List<Map<String, dynamic>> requestsWithDonors = [];
+
+//       for (var requestDoc in requestSnapshot.docs) {
+//         var requestData = requestDoc.data() as Map<String, dynamic>;
+//         String requestedBloodGroup = requestData['bloodGroup'];
+
+//         QuerySnapshot donorSnapshot = await FirebaseFirestore.instance
+//             .collection('blood')
+//             .where('bloodGroup', isEqualTo: requestedBloodGroup)
+//             .get();
+
+//         List<Map<String, dynamic>> matchingDonors = donorSnapshot.docs.map((doc) {
+//           var donorData = doc.data() as Map<String, dynamic>;
+//           donorData['id'] = doc.id;
+//           return donorData;
+//         }).toList();
+
+//         requestData['donors'] = matchingDonors;
+//         requestData['id'] = requestDoc.id;
+//         requestsWithDonors.add(requestData);
+//       }
+
+//       setState(() {
+//         bloodRequests = requestsWithDonors;
+//       });
+//     } catch (e) {
+//       print("❌ Error fetching blood requests with donors: $e");
+//     }
+
+//     setState(() {
+//       isLoading = false;
+//     });
+//   }
+
+//   Future<void> _acceptRequest(String requestId, String recipientPhone) async {
+//     await FirebaseFirestore.instance.collection('request_blood').doc(requestId).update({
+//       'status': 'accepted',
+//     });
+
+//     twilioFlutter.sendSMS(
+//       toNumber: recipientPhone,
+//       messageBody: "✅ Your blood request has been accepted! Please contact the donor for further details.",
+//     );
+
+//     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("✅ Request Accepted! SMS Sent.")));
+//   }
+
+//   void _showBloodRequests() {
+//     _fetchBloodRequestsWithDonors();
+
+//     showModalBottomSheet(
+//       context: context,
+//       isScrollControlled: true,
+//       builder: (context) {
+//         return StatefulBuilder(
+//           builder: (BuildContext context, StateSetter setState) {
+//             return Padding(
+//               padding: EdgeInsets.all(16),
+//               child: Column(
+//                 mainAxisSize: MainAxisSize.min,
+//                 children: [
+//                   Text("Blood Requests & Donors", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+//                   SizedBox(height: 10),
+//                   isLoading
+//                       ? Center(child: CircularProgressIndicator())
+//                       : bloodRequests.isEmpty
+//                           ? Center(child: Text("No pending blood requests"))
+//                           : Expanded(
+//                               child: ListView.builder(
+//                                 itemCount: bloodRequests.length,
+//                                 itemBuilder: (context, index) {
+//                                   var request = bloodRequests[index];
+//                                   var donors = request['donors'] as List<Map<String, dynamic>>;
+
+//                                   return Card(
+//                                     elevation: 3,
+//                                     margin: EdgeInsets.symmetric(vertical: 8),
+//                                     child: ExpansionTile(
+//                                       title: Text("Request by: ${request['requesterName']}"),
+//                                       subtitle: Column(
+//                                         crossAxisAlignment: CrossAxisAlignment.start,
+//                                         children: [
+//                                           Text("Blood Group: ${request['bloodGroup']}"),
+//                                           Text("📍 Location: ${request['requesterLocation'] ?? 'Not provided'}"),
+//                                           Text("📞 Phone: ${request['requesterPhone'] ?? 'Not provided'}"),
+//                                         ],
+//                                       ),
+//                                       children: donors.isEmpty
+//                                           ? [Padding(padding: EdgeInsets.all(8), child: Text("No donors available"))]
+//                                           : donors.map((donor) {
+//                                               return ListTile(
+//                                                 title: Text(donor['name']),
+//                                                 subtitle: Column(
+//                                                   crossAxisAlignment: CrossAxisAlignment.start,
+//                                                   children: [
+//                                                     Text("📍 Location: ${donor['location']}"),
+//                                                     Text("📞 Phone: ${donor['phone']}"),
+//                                                     Text("🎖️ Rewards: ${donor['rewards']}"),
+//                                                   ],
+//                                                 ),
+//                                                 trailing: ElevatedButton(
+//                                                   onPressed: () => _acceptRequest(request['id'], request['requesterPhone']),
+//                                                   child: Text("Accept"),
+//                                                 ),
+//                                               );
+//                                             }).toList(),
+//                                     ),
+//                                   );
+//                                 },
+//                               ),
+//                             ),
+//                 ],
+//               ),
+//             );
+//           },
+//         );
+//       },
+//     );
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: Text(" Donate Blood")),
+//       body: Padding(
+//         padding: EdgeInsets.all(16.0),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text(" Become a Blood Donor", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+//             SizedBox(height: 10),
+
+//             Form(
+//               key: _formKey,
+//               child: Column(
+//                 children: [
+//                   TextFormField(
+//                     decoration: InputDecoration(labelText: "Name"),
+//                     validator: (value) => value!.isEmpty ? "Enter your name" : null,
+//                     onSaved: (value) => donorName = value,
+//                   ),
+//                   SizedBox(height: 10),
+//                   DropdownButtonFormField<String>(
+//                     decoration: InputDecoration(labelText: "Blood Group"),
+//                     items: bloodGroups.map((String group) {
+//                       return DropdownMenuItem<String>(
+//                         value: group,
+//                         child: Text(group),
+//                       );
+//                     }).toList(),
+//                     onChanged: (value) => selectedBloodGroup = value,
+//                   ),
+//                   SizedBox(height: 20),
+//                   ElevatedButton(
+//                     onPressed: _submitDonorApplication,
+//                     child: Text("Register as Donor"),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//             SizedBox(height: 20),
+//             ElevatedButton(
+//               onPressed: _showBloodRequests,
+//               child: Text("View Blood Requests"),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+
+class DonateBloodPage extends StatefulWidget {
+  @override
+  _DonateBloodPageState createState() => _DonateBloodPageState();
+}
+
+class _DonateBloodPageState extends State<DonateBloodPage> {
+  final _formKey = GlobalKey<FormState>();
+  String? donorName, donorPhone, selectedBloodGroup, donorLocation;
+  bool isSubmitting = false;
+
+  final List<String> bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserLocation();
+  }
+
+  Future<void> _getUserLocation() async {
+    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    setState(() {
+      donorLocation = "${position.latitude}, ${position.longitude}";
+    });
+  }
+
+  Future<void> _submitDonorDetails() async {
+    if (!_formKey.currentState!.validate()) return;
+    _formKey.currentState!.save();
+
+    setState(() => isSubmitting = true);
+    String? userId = FirebaseAuth.instance.currentUser?.uid;
+
+    await FirebaseFirestore.instance.collection('donors').doc(userId).set({
+      'userId': userId,
+      'name': donorName,
+      'bloodGroup': selectedBloodGroup,
+      'location': donorLocation,
+      'phone': donorPhone,
+      'status': 'none',
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    setState(() => isSubmitting = false);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Successfully Registered as a Donor!")));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Donate Blood")),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                decoration: InputDecoration(labelText: "Name"),
+                validator: (value) => value!.isEmpty ? "Enter your name" : null,
+                onSaved: (value) => donorName = value,
+              ),
+              DropdownButtonFormField<String>(
+                decoration: InputDecoration(labelText: "Blood Group"),
+                items: bloodGroups.map((group) {
+                  return DropdownMenuItem(value: group, child: Text(group));
+                }).toList(),
+                onChanged: (value) => selectedBloodGroup = value,
+              ),
+              TextFormField(
+                decoration: InputDecoration(labelText: "Phone Number"),
+                validator: (value) => value!.isEmpty ? "Enter your phone number" : null,
+                onSaved: (value) => donorPhone = value,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: isSubmitting ? null : _submitDonorDetails,
+                child: isSubmitting ? CircularProgressIndicator() : Text("Become a Donor"),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
